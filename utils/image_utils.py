@@ -1,20 +1,8 @@
 from PIL import Image
 
+DISPLAY_SIZE = (450, 320)
 
-def load_image(path, size=(400, 300)):
-    """
-    Load and resize an image for display.
-
-    Args:
-        path: Image file path
-        size: Desired display size
-
-    Returns:
-        PIL.Image object
-    """
-
+def load_image(path):
     image = Image.open(path)
-
-    image.thumbnail(size)
-
+    image.thumbnail(DISPLAY_SIZE)
     return image

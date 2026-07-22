@@ -1,10 +1,12 @@
 import customtkinter as ctk
+import cv2
 
 from ui.styles import *
 from ui.sidebar import Sidebar
 from ui.image_view import ImageView
-from tkinter import filedialog
+from tkinter import Image, filedialog
 from utils.image_utils import load_image
+from preprocessing.preprocess import preprocess
 
 class MainWindow(ctk.CTk):
 
@@ -18,6 +20,9 @@ class MainWindow(ctk.CTk):
         self.resizable(False, False)
 
         self.create_layout()
+        self.image_path = None
+        self.original_cv_image = None
+        self.preprocessed_cv_image = None
 
     def create_layout(self):
 
@@ -90,9 +95,7 @@ class MainWindow(ctk.CTk):
     def upload_image(self):
 
         path = filedialog.askopenfilename(
-
             title="Select Vehicle Image",
-
             filetypes=[
                 ("Images", "*.jpg *.jpeg *.png")
             ]
@@ -101,14 +104,38 @@ class MainWindow(ctk.CTk):
         if not path:
             return
 
-        image = load_image(path)
+    # Store path
+        self.image_path = path
 
-        self.content.original_card.set_image(image)
+    # Read using OpenCV
+        self.original_cv_image = cv2.imread(path)
 
+    # Run preprocessing
+        self.preprocessed_cv_image = preprocess(
+            self.original_cv_image.copy()
+        )
+
+    # Display original image
+        original_image = load_image(path)
+        self.content.original_card.set_image(original_image)
+
+    # Display processed image
+        processed_rgb = cv2.cvtColor(
+            self.preprocessed_cv_image,
+            cv2.COLOR_BGR2RGB
+        )
+
+        from PIL import Image
+
+        processed_pil = Image.fromarray(processed_rgb)
+
+        self.content.processed_card.set_image(processed_pil)
+
+    # Update UI
         self.sidebar.detect_button.configure(
             state="normal"
         )
 
         self.sidebar.status.configure(
-            text="🟢 Image Loaded"
+            text="🟢 Image Ready"
         )
