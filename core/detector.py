@@ -5,9 +5,4 @@ class DamageDetector:
         self.model = None
 
     def detect(self, image):
-
-        """
-        Placeholder for YOLO detection.
-        """
-
         return image
