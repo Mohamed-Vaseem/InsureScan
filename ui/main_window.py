@@ -1,12 +1,15 @@
 import customtkinter as ctk
 import cv2
 
+from PIL import Image
+from tkinter import filedialog
+
 from ui.styles import *
 from ui.sidebar import Sidebar
 from ui.image_view import ImageView
-from tkinter import Image, filedialog
-from utils.image_utils import load_image
-from preprocessing.preprocess import preprocess
+
+from core.pipeline import ProcessingPipeline
+
 
 class MainWindow(ctk.CTk):
 
@@ -14,29 +17,34 @@ class MainWindow(ctk.CTk):
         super().__init__()
 
         self.title("InsureScan")
-
         self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
-
         self.resizable(False, False)
 
-        self.create_layout()
+        # Processing Pipeline
+        self.pipeline = ProcessingPipeline()
+
+        # Store selected image path
         self.image_path = None
-        self.original_cv_image = None
-        self.preprocessed_cv_image = None
+
+        # Build UI
+        self.create_layout()
 
     def create_layout(self):
 
+        # -----------------------------
+        # Header
+        # -----------------------------
         title = ctk.CTkLabel(
             self,
             text="INSURESCAN",
             font=TITLE_FONT
         )
-    
+
         title.grid(
             row=0,
             column=0,
             columnspan=2,
-            pady=(20,5)
+            pady=(20, 5)
         )
 
         subtitle = ctk.CTkLabel(
@@ -49,26 +57,14 @@ class MainWindow(ctk.CTk):
             row=1,
             column=0,
             columnspan=2,
-            pady=(0,20)
+            pady=(0, 20)
         )
 
-    # Right Panel
-
-        self.content = ctk.CTkFrame(
-            self,
-            corner_radius=12
-        )
-
-        self.content.grid(
-            row=2,
-            column=1,
-            sticky="nsew",
-            padx=(0,20),
-            pady=20
-        )
-
+        # Window Layout
         self.grid_columnconfigure(1, weight=1)
         self.grid_rowconfigure(2, weight=1)
+
+        # Sidebar
         self.sidebar = Sidebar(
             self,
             self.upload_image
@@ -82,16 +78,17 @@ class MainWindow(ctk.CTk):
             pady=20
         )
 
+        # Main Content
         self.content = ImageView(self)
 
         self.content.grid(
             row=2,
             column=1,
             sticky="nsew",
-            padx=(0,20),
+            padx=(0, 20),
             pady=20
         )
-    
+
     def upload_image(self):
 
         path = filedialog.askopenfilename(
@@ -104,38 +101,32 @@ class MainWindow(ctk.CTk):
         if not path:
             return
 
-    # Store path
         self.image_path = path
 
-    # Read using OpenCV
-        self.original_cv_image = cv2.imread(path)
+        # Run the processing pipeline
+        result = self.pipeline.process(path)
 
-    # Run preprocessing
-        self.preprocessed_cv_image = preprocess(
-            self.original_cv_image.copy()
+        # Convert original image (OpenCV BGR -> PIL RGB)
+        original_image = Image.fromarray(
+            cv2.cvtColor(result.original, cv2.COLOR_BGR2RGB)
         )
 
-    # Display original image
-        original_image = load_image(path)
+        processed_image = Image.fromarray(
+            cv2.cvtColor(result.preprocessed, cv2.COLOR_BGR2RGB)
+        )
+        
         self.content.original_card.set_image(original_image)
+        self.content.processed_card.set_image(processed_image)
 
-    # Display processed image
-        processed_rgb = cv2.cvtColor(
-            self.preprocessed_cv_image,
-            cv2.COLOR_BGR2RGB
-        )
+        # Update result panel
+        self.content.results_card.update_results(result)
 
-        from PIL import Image
-
-        processed_pil = Image.fromarray(processed_rgb)
-
-        self.content.processed_card.set_image(processed_pil)
-
-    # Update UI
+        # Enable Detect button
         self.sidebar.detect_button.configure(
             state="normal"
         )
 
+        # Update status
         self.sidebar.status.configure(
             text="🟢 Image Ready"
         )

@@ -2,6 +2,7 @@ import customtkinter as ctk
 
 from ui.styles import *
 
+
 class ResultCard(ctk.CTkFrame):
 
     def __init__(self, master):
@@ -23,23 +24,94 @@ class ResultCard(ctk.CTkFrame):
 
         title.pack(pady=15)
 
+        # Damage
         self.damage = ctk.CTkLabel(
             self,
-            text="Damage : --"
+            text="Damage : --",
+            anchor="w"
         )
 
-        self.damage.pack(anchor="w", padx=20)
+        self.damage.pack(
+            fill="x",
+            padx=20,
+            pady=(0, 5)
+        )
 
+        # Confidence
         self.confidence = ctk.CTkLabel(
             self,
-            text="Confidence : --"
+            text="Confidence : --",
+            anchor="w"
         )
 
-        self.confidence.pack(anchor="w", padx=20, pady=5)
+        self.confidence.pack(
+            fill="x",
+            padx=20,
+            pady=5
+        )
 
+        # Severity
+        self.severity = ctk.CTkLabel(
+            self,
+            text="Severity : --",
+            anchor="w"
+        )
+
+        self.severity.pack(
+            fill="x",
+            padx=20,
+            pady=5
+        )
+
+        # Processing Time
         self.time = ctk.CTkLabel(
             self,
-            text="Processing Time : --"
+            text="Processing Time : --",
+            anchor="w"
         )
 
-        self.time.pack(anchor="w", padx=20, pady=(5,20))
+        self.time.pack(
+            fill="x",
+            padx=20,
+            pady=5
+        )
+
+        # Status
+        self.status = ctk.CTkLabel(
+            self,
+            text="Status : Waiting",
+            anchor="w"
+        )
+
+        self.status.pack(
+            fill="x",
+            padx=20,
+            pady=(5, 20)
+        )
+
+    def update_results(self, result):
+
+        self.damage.configure(
+            text=f"Damage : {result.damage_type or '--'}"
+        )
+
+        self.confidence.configure(
+            text=f"Confidence : {result.confidence or '--'}"
+        )
+
+        self.severity.configure(
+            text=f"Severity : {result.severity or '--'}"
+        )
+
+        if result.processing_time is not None:
+            self.time.configure(
+                text=f"Processing Time : {result.processing_time:.3f} sec"
+            )
+        else:
+            self.time.configure(
+                text="Processing Time : --"
+            )
+
+        self.status.configure(
+            text=f"Status : {result.message or 'Waiting'}"
+        )

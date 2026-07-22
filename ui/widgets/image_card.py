@@ -1,8 +1,10 @@
 import customtkinter as ctk
+from PIL import Image
 
 from ui.styles import *
-from PIL import Image
-import customtkinter as ctk
+
+DISPLAY_SIZE = (520, 340)
+
 
 class ImageCard(ctk.CTkFrame):
 
@@ -13,8 +15,8 @@ class ImageCard(ctk.CTkFrame):
             corner_radius=12
         )
 
-        self.build(title)
         self.photo = None
+        self.build(title)
 
     def build(self, title):
 
@@ -24,14 +26,13 @@ class ImageCard(ctk.CTkFrame):
             font=HEADER_FONT
         )
 
-        title_label.pack(pady=(15,10))
+        title_label.pack(pady=(15, 10))
 
         self.image_label = ctk.CTkLabel(
             self,
             text="No Image",
-            width=400,
-            height=300,
-            corner_radius=10
+            width=DISPLAY_SIZE[0],
+            height=DISPLAY_SIZE[1]
         )
 
         self.image_label.pack(
@@ -39,7 +40,11 @@ class ImageCard(ctk.CTkFrame):
             pady=20,
             expand=True
         )
+
     def set_image(self, image):
+
+        image = image.copy()
+        image.thumbnail(DISPLAY_SIZE)
 
         self.photo = ctk.CTkImage(
             light_image=image,
