@@ -1,20 +1,12 @@
 import cv2
 
-def remove_noise(image):
+def remove_noise(image, kernel_size=3):
     """
-    Remove image noise using Gaussian Blur.
-
-    Args:
-        image: Input image
-
-    Returns:
-        Denoised image
+    Apply a light Gaussian blur.
     """
 
-    denoised = cv2.GaussianBlur(
+    return cv2.GaussianBlur(
         image,
-        (5, 5),
+        (kernel_size, kernel_size),
         0
-    )
-
-    return denoised
+    )   
