@@ -6,24 +6,34 @@ def main():
     model = YOLO("yolo11n-seg.pt")
 
     model.train(
+        # Dataset
         data="datasets/damage_dataset/data.yaml",
 
-        epochs=50,
+        # Image size
         imgsz=640,
 
+        # Training
+        epochs=80,
         batch=8,
+
+        # Hardware
+        device=0,
         workers=4,
 
-        device=0,
-
-        cache=True,#cache="disk"
+        # Performance
+        cache="disk",
         pretrained=True,
+        amp=True,
 
+        # Early stopping
+        patience=15,
+
+        # Output
         project="training",
         name="damage_segmentation",
-
-        patience=20,
         save=True,
+        save_period=10,
+        plots=True,
         verbose=True
     )
 
