@@ -16,7 +16,7 @@ def main():
 
         device=0,
 
-        cache=True,
+        cache=True,#cache="disk"
         pretrained=True,
 
         project="training",
