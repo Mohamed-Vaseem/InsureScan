@@ -2,10 +2,8 @@ import cv2
 
 MODEL_SIZE = (640, 640)
 
+
 def resize_image(image):
-    """
-    Resize image for YOLO.
-    """
 
     return cv2.resize(
         image,

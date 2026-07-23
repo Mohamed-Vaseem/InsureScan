@@ -21,3 +21,4 @@ class ProcessingResult:
         # Status
         self.success = False
         self.message = ""
+        self.preprocessing = None

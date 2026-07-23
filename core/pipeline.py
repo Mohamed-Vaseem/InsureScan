@@ -1,6 +1,7 @@
 import time
 
-from preprocessing.preprocess import preprocess
+from preprocessing.preprocess import Preprocessor
+
 from core.image_manager import ImageManager
 from core.detector import DamageDetector
 from core.result import ProcessingResult
@@ -9,8 +10,12 @@ from core.result import ProcessingResult
 class ProcessingPipeline:
 
     def __init__(self):
+
         self.images = ImageManager()
+
         self.detector = DamageDetector()
+
+        self.preprocessor = Preprocessor()
 
     def process(self, path):
 
@@ -18,14 +23,20 @@ class ProcessingPipeline:
 
         start = time.time()
 
-        # Load Image
+        # Load image
         original = self.images.load(path)
+
         result.original = original
 
-        # Preprocess
-        result.preprocessed = preprocess(
+        # Preprocessing
+        pre = self.preprocessor.process(
             original.copy()
         )
+
+        result.preprocessed = pre.processed
+
+        # (Store preprocessing report for future UI)
+        result.preprocessing = pre
 
         # Detection (placeholder)
         result.detected = self.detector.detect(
@@ -38,10 +49,11 @@ class ProcessingPipeline:
             3
         )
 
-        # Temporary placeholder values
+        # Placeholder values
         result.damage_type = "Pending YOLO"
         result.confidence = "0%"
         result.severity = "Unknown"
+
         result.success = True
         result.message = "Processing Complete"
 

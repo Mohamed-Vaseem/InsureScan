@@ -1,5 +1,5 @@
 import cv2
-from preprocessing.denoise import remove_noise
+from preprocessing.filters.denoise import remove_noise
 
 image = cv2.imread("assets/test.jpg")
 
