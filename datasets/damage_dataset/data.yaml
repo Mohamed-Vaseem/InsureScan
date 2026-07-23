@@ -1,0 +1,17 @@
+path: datasets/damage_dataset
+
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 8
+
+names:
+  0: crack
+  1: crush
+  2: dent
+  3: misalignment
+  4: missing
+  5: scratch
+  6: shatter
+  7: tear
