@@ -13,6 +13,9 @@ class PreprocessingResult:
         self.contrast = 0
         self.sharpness = 0
 
+        # Image Analysis
+        self.analysis = {}
+
         # Flags
         self.is_blurry = False
         self.is_noisy = False
