@@ -48,7 +48,11 @@ class ImageCard(ctk.CTkFrame):
 
     def set_image(self, image):
 
-        image = ImageOps.contain(image, DISPLAY_SIZE)
+        image = ImageOps.fit(
+            image,
+            DISPLAY_SIZE,
+            method=Image.Resampling.LANCZOS
+        )
 
         self.photo = ctk.CTkImage(
             light_image=image,
