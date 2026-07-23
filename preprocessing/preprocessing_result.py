@@ -1,10 +1,23 @@
+from preprocessing.analysis_result import AnalysisResult
+
+
 class PreprocessingResult:
+    """
+    Stores the output of the preprocessing stage.
+    """
 
     def __init__(self):
 
+        # Original input
         self.original = None
+
+        # Final processed image
         self.processed = None
 
-        self.analysis = None
+        # Image analysis
+        self.analysis = AnalysisResult()
 
-        self.operations = []
+        # Status
+        self.success = False
+
+        self.message = ""

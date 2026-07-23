@@ -1,20 +1,20 @@
 class VehicleResult:
     """
-    Stores the vehicle detection result.
+    Stores the result of vehicle detection.
     """
 
     def __init__(self):
 
-        self.found = False
+        # Status
+        self.success = False
+        self.detected = False
+        self.message = ""
 
+        # Detection
+        self.class_name = ""
         self.confidence = 0.0
-
         self.bounding_box = None
 
-        self.class_name = ""
-
+        # Images
         self.cropped_image = None
-
-        self.margin = 0.0
-
-        self.processing_time = 0.0
+        self.annotated_image = None

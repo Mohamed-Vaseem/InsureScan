@@ -1,23 +1,15 @@
-from config import Settings
-
-from preprocessing.analyzer import ImageAnalyzer
 from preprocessing.preprocessing_result import PreprocessingResult
+from preprocessing.analyzer import ImageAnalyzer
 
-from preprocessing.filters.gamma import gamma_correction
-from preprocessing.filters.clahe import apply_clahe
-
+from preprocessing.gamma import gamma_correction
+from preprocessing.clahe import apply_clahe
 from preprocessing.resize import resize_image
-from preprocessing.normalize import normalize
 
 
 class Preprocessor:
-
     """
-    Safe preprocessing.
-
-    Goal:
-    Preserve vehicle damage while making
-    the image suitable for AI inference.
+    Executes preprocessing based on the
+    recommendations produced by ImageAnalyzer.
     """
 
     def __init__(self):
@@ -30,52 +22,41 @@ class Preprocessor:
 
         result.original = image.copy()
 
-        analysis = self.analyzer.analyze(image)
+        processed = image.copy()
+
+        # -----------------------------------
+        # Analyse image
+        # -----------------------------------
+
+        analysis = self.analyzer.analyze(processed)
 
         result.analysis = analysis
 
-        processed = image.copy()
+        # -----------------------------------
+        # Apply preprocessing
+        # -----------------------------------
 
-        # -------------------------
-        # Brightness
-        # -------------------------
-
-        if analysis.brightness < Settings.MIN_BRIGHTNESS:
+        if analysis.need_gamma:
 
             processed = gamma_correction(processed)
 
-            result.operations.append(
-                "Gamma Correction"
-            )
-
-        # -------------------------
-        # Contrast
-        # -------------------------
-
-        if analysis.contrast < Settings.MIN_CONTRAST:
+        if analysis.need_clahe:
 
             processed = apply_clahe(processed)
 
-            result.operations.append(
-                "CLAHE"
-            )
+        if analysis.need_resize:
 
-        # -------------------------
-        # Resize
-        # -------------------------
+            processed = resize_image(processed)
 
-        processed = resize_image(processed)
+        # -----------------------------------
+        # Normalization
+        # -----------------------------------
 
-        result.operations.append("Resize")
-
-        # -------------------------
-        # Normalize
-        # -------------------------
-
-        processed = normalize(processed)
-
-        result.operations.append("Normalize")
 
         result.processed = processed
+
+        result.success = True
+
+        result.message = "Preprocessing completed."
 
         return result

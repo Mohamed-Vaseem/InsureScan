@@ -6,10 +6,9 @@ from preprocessing.validation_result import ValidationResult
 
 
 class ImageValidator:
-
     """
-    Performs basic validation before the image
-    enters the preprocessing pipeline.
+    Validates an image before entering
+    the AI pipeline.
     """
 
     def validate(self, image):
@@ -22,57 +21,62 @@ class ImageValidator:
 
         if image is None:
 
-            result.is_valid = False
             result.is_corrupted = True
-            result.warnings.append("Image could not be loaded.")
+
+            result.message = "Image is empty."
 
             return result
 
         # -------------------------
-        # Dimensions
+        # Image Size
         # -------------------------
 
-        h, w = image.shape[:2]
+        height, width = image.shape[:2]
 
-        result.width = w
-        result.height = h
+        result.width = width
 
-        if len(image.shape) == 3:
-            result.channels = image.shape[2]
-        else:
-            result.channels = 1
+        result.height = height
+
+        result.channels = image.shape[2]
 
         # -------------------------
-        # Orientation
+        # Minimum Size
         # -------------------------
 
-        if w > h:
-            result.orientation = "Landscape"
-
-        elif h > w:
-            result.orientation = "Portrait"
-
-        else:
-            result.orientation = "Square"
-
-        # -------------------------
-        # Resolution Checks
-        # -------------------------
-
-        if w < Settings.MIN_WIDTH or h < Settings.MIN_HEIGHT:
+        if width < Settings.MIN_WIDTH:
 
             result.too_small = True
 
             result.warnings.append(
-                "Image resolution is too low."
+                "Image width is too small."
             )
 
-        if w > Settings.MAX_WIDTH or h > Settings.MAX_HEIGHT:
+        if height < Settings.MIN_HEIGHT:
+
+            result.too_small = True
+
+            result.warnings.append(
+                "Image height is too small."
+            )
+
+        # -------------------------
+        # Maximum Size
+        # -------------------------
+
+        if width > Settings.MAX_WIDTH:
 
             result.too_large = True
 
             result.warnings.append(
-                "Image resolution is very high."
+                "Image width exceeds limit."
+            )
+
+        if height > Settings.MAX_HEIGHT:
+
+            result.too_large = True
+
+            result.warnings.append(
+                "Image height exceeds limit."
             )
 
         # -------------------------
@@ -81,6 +85,18 @@ class ImageValidator:
 
         if result.too_small:
 
-            result.is_valid = False
+            result.message = "Image resolution is too low."
+
+            return result
+
+        if result.too_large:
+
+            result.message = "Image resolution is too high."
+
+            return result
+
+        result.is_valid = True
+
+        result.message = "Validation successful."
 
         return result

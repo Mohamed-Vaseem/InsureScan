@@ -1,16 +1,12 @@
-"""
-Global configuration for InsureScan.
-
-All configurable values should be stored here instead of hardcoding
-them inside the project.
-"""
-
-
 class Settings:
+    """
+    Global configuration for InsureScan.
+    All project-wide settings should be placed here.
+    """
 
-    # ==========================
+    # ==========================================
     # Image Validation
-    # ==========================
+    # ==========================================
 
     MIN_WIDTH = 640
     MIN_HEIGHT = 480
@@ -18,40 +14,48 @@ class Settings:
     MAX_WIDTH = 6000
     MAX_HEIGHT = 6000
 
-    # ==========================
-    # Image Analysis Thresholds
-    # ==========================
+    # ==========================================
+    # Image Analysis
+    # ==========================================
 
     MIN_BRIGHTNESS = 80
     MIN_CONTRAST = 40
 
-    MAX_NOISE = 20
-
+    # Variance of Laplacian
     MIN_BLUR_SCORE = 100
 
-    # ==========================
-    # Vehicle Crop
-    # ==========================
+    # Estimated image noise
+    MAX_NOISE = 40
 
-    CROP_MARGIN = 0.10      # 10%
+    # ==========================================
+    # Vehicle Detection
+    # ==========================================
 
-    # ==========================
-    # Preprocessing
-    # ==========================
+    VEHICLE_MODEL = "models/vehicle/yolo11n.pt"
 
-    RESIZE_WIDTH = 640
-    RESIZE_HEIGHT = 640
+    VEHICLE_CONFIDENCE = 0.35
+    VEHICLE_IOU = 0.45
 
-    # ==========================
-    # YOLO
-    # ==========================
+    CROP_MARGIN = 20
 
-    CONFIDENCE_THRESHOLD = 0.30
+    # ==========================================
+    # Damage Detection
+    # ==========================================
 
-    IOU_THRESHOLD = 0.45
+    DAMAGE_MODEL = "models/damage/best.pt"
 
-    # ==========================
+    DAMAGE_CONFIDENCE = 0.25
+    DAMAGE_IOU = 0.45
+
+    # ==========================================
+    # Image Processing
+    # ==========================================
+
+    RESIZE_WIDTH = 1024
+    RESIZE_HEIGHT = 768
+
+    # ==========================================
     # Logging
-    # ==========================
+    # ==========================================
 
     ENABLE_LOGS = True

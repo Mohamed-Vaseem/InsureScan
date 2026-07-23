@@ -1,32 +1,33 @@
-import cv2
+from config import Settings
 
 
-class Cropper:
-
+class VehicleCropper:
     """
-    Generic crop utility.
-
-    Can crop any object given
-    a bounding box.
+    Crops the detected vehicle from the image.
     """
 
-    @staticmethod
-    def crop(image, bbox, margin=0.10):
+    def crop(self, image, box):
 
-        x1, y1, x2, y2 = bbox
+        """
+        Parameters
+        ----------
+        image : ndarray
 
-        h, w = image.shape[:2]
+        box : (x1, y1, x2, y2)
 
-        bw = x2 - x1
-        bh = y2 - y1
+        Returns
+        -------
+        Cropped vehicle image.
+        """
 
-        mx = int(bw * margin)
-        my = int(bh * margin)
+        x1, y1, x2, y2 = map(int, box)
 
-        x1 = max(0, x1 - mx)
-        y1 = max(0, y1 - my)
+        margin = Settings.CROP_MARGIN
 
-        x2 = min(w, x2 + mx)
-        y2 = min(h, y2 + my)
+        x1 = max(0, x1 - margin)
+        y1 = max(0, y1 - margin)
 
-        return image[y1:y2, x1:x2]
+        x2 = min(image.shape[1], x2 + margin)
+        y2 = min(image.shape[0], y2 + margin)
+
+        return image[y1:y2, x1:x2].copy()

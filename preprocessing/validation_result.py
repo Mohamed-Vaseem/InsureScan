@@ -1,25 +1,34 @@
 class ValidationResult:
     """
-    Stores image validation results.
-
-    This class is intentionally independent from preprocessing
-    because validation happens before any enhancement.
+    Stores the validation results of an image.
     """
 
     def __init__(self):
 
-        self.is_valid = True
+        # -------------------------
+        # Image Information
+        # -------------------------
 
         self.width = 0
         self.height = 0
-
         self.channels = 0
 
-        self.orientation = "Unknown"
+        # -------------------------
+        # Validation Flags
+        # -------------------------
+
+        self.is_valid = False
 
         self.is_corrupted = False
 
         self.too_small = False
+
         self.too_large = False
 
+        # -------------------------
+        # Messages
+        # -------------------------
+
         self.warnings = []
+
+        self.message = ""

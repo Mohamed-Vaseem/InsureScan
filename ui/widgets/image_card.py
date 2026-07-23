@@ -1,9 +1,9 @@
 import customtkinter as ctk
-from PIL import Image
+from PIL import Image, ImageOps
 
 from ui.styles import *
 
-DISPLAY_SIZE = (520, 340)
+DISPLAY_SIZE = (500, 280)
 
 
 class ImageCard(ctk.CTkFrame):
@@ -16,6 +16,7 @@ class ImageCard(ctk.CTkFrame):
         )
 
         self.photo = None
+
         self.build(title)
 
     def build(self, title):
@@ -26,25 +27,28 @@ class ImageCard(ctk.CTkFrame):
             font=HEADER_FONT
         )
 
-        title_label.pack(pady=(15, 10))
+        title_label.pack(
+            pady=(15, 10)
+        )
 
         self.image_label = ctk.CTkLabel(
             self,
             text="No Image",
             width=DISPLAY_SIZE[0],
-            height=DISPLAY_SIZE[1]
+            height=DISPLAY_SIZE[1],
+            fg_color="#2B2B2B",
+            corner_radius=8
         )
 
         self.image_label.pack(
             padx=20,
-            pady=20,
+            pady=(0, 20),
             expand=True
         )
 
     def set_image(self, image):
 
-        image = image.copy()
-        image.thumbnail(DISPLAY_SIZE)
+        image = ImageOps.contain(image, DISPLAY_SIZE)
 
         self.photo = ctk.CTkImage(
             light_image=image,

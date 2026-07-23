@@ -2,95 +2,84 @@ import time
 
 from core.image_manager import ImageManager
 from core.input_manager import InputManager
+from core.processing_result import ProcessingResult
 
 from detection.damage_detector import DamageDetector
 
-from core.result import ProcessingResult
-
 
 class ProcessingPipeline:
-
     """
-    Main InsureScan AI Pipeline.
+    Main InsureScan pipeline.
     """
 
     def __init__(self):
 
-        self.images = ImageManager()
+        self.image_manager = ImageManager()
 
-        self.input = InputManager()
+        self.input_manager = InputManager()
 
-        self.detector = DamageDetector()
+        self.damage_detector = DamageDetector()
 
-    def process(self, path):
+    def process(self, image_path):
 
         start = time.time()
 
         result = ProcessingResult()
 
-        # -------------------------
-        # Load Image
-        # -------------------------
+        try:
 
-        image = self.images.load(path)
+            # -----------------------
+            # Load Image
+            # -----------------------
 
-        # -------------------------
-        # Input Stage
-        # -------------------------
+            image = self.image_manager.load(image_path)
 
-        input_result = self.input.prepare(image)
+            # -----------------------
+            # Input Pipeline
+            # -----------------------
 
-        result.input = input_result
+            input_result = self.input_manager.prepare(image)
 
-        result.original = input_result.original
+            result.input = input_result
 
-        if input_result.cropped is not None:
+            result.original = input_result.original
 
             result.cropped = input_result.cropped
 
-        if input_result.processed is not None:
-
             result.preprocessed = input_result.processed
 
-        if not input_result.success:
+            if not input_result.success:
 
-            result.message = input_result.message
+                result.message = input_result.message
+
+                return result
+
+            # -----------------------
+            # Damage Detection
+            # -----------------------
+
+            damage = self.damage_detector.predict(input_result.processed)
+
+            result.damage = damage
+
+            if damage.success:
+                result.segmented = damage.annotated_image
+
+            result.processing_time = round(
+                time.time() - start,
+                3
+            )
+
+            result.success = True
+
+            result.message = "Pipeline completed."
 
             return result
 
-        # -------------------------
-        # Damage Detection
-        # -------------------------
+        except Exception as e:
 
-        damage = self.detector.detect(
-            input_result.processed
-        )
+            result.success = False
 
-        result.damage = damage
+            result.message = str(e)
 
-        result.detected = damage
-
-        # -------------------------
-        # Placeholder
-        # -------------------------
-
-        result.damage_type = "Pending YOLO11-Seg"
-
-        result.confidence = "--"
-
-        result.severity = "--"
-
-        # -------------------------
-        # Finish
-        # -------------------------
-
-        result.processing_time = round(
-            time.time() - start,
-            3
-        )
-
-        result.success = True
-
-        result.message = "Pipeline completed."
-
-        return result
+            return result

@@ -1,30 +1,20 @@
 class InputResult:
     """
-    Stores everything produced during the
-    image preparation stage.
+    Result returned by InputManager.
     """
 
     def __init__(self):
 
-        # Original image
+        # Images
         self.original = None
-
-        # Vehicle crop
         self.cropped = None
-
-        # Final image sent to YOLO
         self.processed = None
 
-        # Validation report
+        # Results
         self.validation = None
-
-        # Vehicle detection report
         self.vehicle = None
-
-        # Preprocessing report
         self.preprocessing = None
 
         # Status
         self.success = False
-
         self.message = ""

@@ -1,113 +1,109 @@
-import time
-
 from ultralytics import YOLO
-
-from preprocessing.cropper import Cropper
-
-from detection.vehicle_result import VehicleResult
+import cv2
 
 from config import Settings
+from preprocessing.cropper import VehicleCropper
+from detection.vehicle_result import VehicleResult
 
 
 class VehicleDetector:
+    """
+    Detects the primary vehicle in an image.
+    """
 
-    """
-    Detects the primary vehicle
-    inside an image using YOLO11.
-    """
+    VEHICLE_CLASSES = {
+        "car",
+        "truck",
+        "bus",
+        "motorcycle"
+    }
 
     def __init__(self):
 
-        self.model = YOLO(
-            "models/vehicle/yolo11n.pt"
-        )
+        self.model = YOLO(Settings.VEHICLE_MODEL)
 
-    def detect(self, image):
+        self.cropper = VehicleCropper()
 
-        start = time.time()
+    def predict(self, image):
 
         result = VehicleResult()
 
         predictions = self.model.predict(
-            image,
+
+            source=image,
+
+            conf=Settings.VEHICLE_CONFIDENCE,
+
+            iou=Settings.VEHICLE_IOU,
+
             verbose=False
         )
 
-        boxes = predictions[0].boxes
+        if len(predictions) == 0:
 
-        if len(boxes) == 0:
-
-            result.processing_time = round(
-                time.time() - start,
-                3
-            )
+            result.message = "No predictions."
 
             return result
 
-        best = None
-        best_conf = 0
+        prediction = predictions[0]
 
-        for box in boxes:
+        annotated = prediction.plot()
 
-            cls = int(box.cls.item())
+        largest_area = 0
 
-            name = self.model.names[cls]
+        best_box = None
 
-            # COCO vehicle classes
-            if name not in [
-                "car",
-                "truck",
-                "bus"
-            ]:
+        best_name = ""
+
+        best_conf = 0.0
+
+        names = self.model.names
+
+        for box in prediction.boxes:
+
+            cls = int(box.cls[0])
+
+            name = names[cls]
+
+            if name not in self.VEHICLE_CLASSES:
                 continue
 
-            conf = float(box.conf.item())
+            x1, y1, x2, y2 = map(int, box.xyxy[0])
 
-            if conf > best_conf:
+            area = (x2 - x1) * (y2 - y1)
 
-                best = box
-                best_conf = conf
+            if area > largest_area:
 
-        if best is None:
+                largest_area = area
 
-            result.processing_time = round(
-                time.time() - start,
-                3
-            )
+                best_box = (x1, y1, x2, y2)
+
+                best_name = name
+
+                best_conf = float(box.conf[0])
+
+        if best_box is None:
+
+            result.message = "No vehicle detected."
 
             return result
 
-        x1, y1, x2, y2 = map(
-            int,
-            best.xyxy[0]
-        )
+        cropped = self.cropper.crop(image, best_box)
 
-        result.bounding_box = (
-            x1,
-            y1,
-            x2,
-            y2
-        )
+        result.success = True
+
+        result.detected = True
+
+        result.message = "Vehicle detected."
+
+        result.class_name = best_name
 
         result.confidence = best_conf
 
-        result.class_name = self.model.names[
-            int(best.cls.item())
-        ]
+        result.bounding_box = best_box
 
-        result.margin = Settings.CROP_MARGIN
+        result.cropped_image = cropped
 
-        result.cropped_image = Cropper.crop(
-            image,
-            result.bounding_box,
-            Settings.CROP_MARGIN
-        )
-
-        result.found = True
-
-        result.processing_time = round(
-            time.time() - start,
-            3
-        )
+        result.annotated_image = annotated
 
         return result

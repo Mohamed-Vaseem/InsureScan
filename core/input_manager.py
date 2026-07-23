@@ -1,3 +1,5 @@
+from core.input_result import InputResult
+
 from preprocessing.validator import ImageValidator
 from preprocessing.preprocess import Preprocessor
 
@@ -5,48 +7,32 @@ from detection.vehicle_detector import VehicleDetector
 
 
 class InputManager:
-
     """
     Responsible for preparing an image
-    before AI damage detection.
-
-    Pipeline
-
-    Validate
-
-    ↓
-
-    Detect Vehicle
-
-    ↓
-
-    Crop Vehicle
-
-    ↓
-
-    Preprocess
-
+    before damage detection.
     """
 
     def __init__(self):
 
         self.validator = ImageValidator()
 
-        self.detector = VehicleDetector()
+        self.vehicle_detector = VehicleDetector()
 
         self.preprocessor = Preprocessor()
 
     def prepare(self, image):
 
-        from core.input_result import InputResult
-
         result = InputResult()
+
+        # -----------------------
+        # Original Image
+        # -----------------------
 
         result.original = image.copy()
 
-        # -------------------------
+        # -----------------------
         # Validation
-        # -------------------------
+        # -----------------------
 
         validation = self.validator.validate(image)
 
@@ -58,36 +44,50 @@ class InputManager:
 
             return result
 
-        # -------------------------
+        # -----------------------
         # Vehicle Detection
-        # -------------------------
+        # -----------------------
 
-        vehicle = self.detector.detect(image)
+        vehicle = self.vehicle_detector.predict(image)
 
         result.vehicle = vehicle
 
-        if not vehicle.found:
+        if not vehicle.success:
 
-            result.message = "No vehicle detected."
+            result.message = vehicle.message
 
             return result
 
-        result.cropped = vehicle.cropped_image
+        cropped = vehicle.cropped_image
 
-        # -------------------------
-        # Preprocessing
-        # -------------------------
+        result.cropped = cropped
 
-        pre = self.preprocessor.process(
-            vehicle.cropped_image
-        )
+        preprocessing = self.preprocessor.process(cropped)
 
-        result.preprocessing = pre
+        result.preprocessing = preprocessing
 
-        result.processed = pre.processed
+        result.processed = preprocessing.processed
 
         result.success = True
 
-        result.message = "Input ready."
+        result.message = "Input preparation completed."
+
+        return result
+
+        # -----------------------
+        # Preprocessing
+        # -----------------------
+
+        preprocessing = self.preprocessor.process(
+            vehicle.cropped_image
+        )
+
+        result.preprocessing = preprocessing
+
+        result.processed = preprocessing.processed
+
+        result.success = True
+
+        result.message = "Input prepared successfully."
 
         return result

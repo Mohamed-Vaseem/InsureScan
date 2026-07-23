@@ -1,12 +1,15 @@
-import cv2
+import numpy as np
 
 
-def normalize(image):
+def normalize_image(image):
+    """
+    Normalize image to float32 [0,1].
 
-    return cv2.normalize(
-        image,
-        None,
-        0,
-        255,
-        cv2.NORM_MINMAX
-    )
+    This is intended for deep learning models.
+    """
+
+    image = image.astype(np.float32)
+
+    image /= 255.0
+
+    return image

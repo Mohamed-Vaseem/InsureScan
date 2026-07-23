@@ -1,3 +1,5 @@
+from unittest import result
+
 import customtkinter as ctk
 import cv2
 
@@ -17,13 +19,13 @@ class MainWindow(ctk.CTk):
         super().__init__()
 
         self.title("InsureScan")
-        self.geometry(f"{WINDOW_WIDTH}x{WINDOW_HEIGHT}")
+        self.geometry("1450x850")
         self.resizable(False, False)
 
         # Processing Pipeline
         self.pipeline = ProcessingPipeline()
 
-        # Store selected image path
+        # Store selected image path 
         self.image_path = None
 
         # Build UI
@@ -49,7 +51,7 @@ class MainWindow(ctk.CTk):
 
         subtitle = ctk.CTkLabel(
             self,
-            text="AI Powered Hyundai Damage Detection",
+            text="AI-Powered Vehicle Damage Detection",
             font=SUBTITLE_FONT
         )
 
@@ -67,7 +69,9 @@ class MainWindow(ctk.CTk):
         # Sidebar
         self.sidebar = Sidebar(
             self,
-            self.upload_image
+            self.upload_image,
+            self.detect_damage,
+            self.clear_all
         )
 
         self.sidebar.grid(
@@ -90,12 +94,13 @@ class MainWindow(ctk.CTk):
         )
 
     def upload_image(self):
+        self.sidebar.upload_button.configure(
+            state="disabled"
+        )
 
         path = filedialog.askopenfilename(
             title="Select Vehicle Image",
-            filetypes=[
-                ("Images", "*.jpg *.jpeg *.png")
-            ]
+            filetypes=[("Images", "*.jpg *.jpeg *.png")]
         )
 
         if not path:
@@ -103,30 +108,120 @@ class MainWindow(ctk.CTk):
 
         self.image_path = path
 
-        # Run the processing pipeline
-        result = self.pipeline.process(path)
+        image = self.pipeline.image_manager.load(path)
 
-        # Convert original image (OpenCV BGR -> PIL RGB)
-        original_image = Image.fromarray(
-            cv2.cvtColor(result.original, cv2.COLOR_BGR2RGB)
+        original = Image.fromarray(
+            cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         )
 
-        processed_image = Image.fromarray(
-            cv2.cvtColor(result.preprocessed, cv2.COLOR_BGR2RGB)
-        )
-        
-        self.content.original_card.set_image(original_image)
-        self.content.processed_card.set_image(processed_image)
+        self.content.original_card.set_image(original)
 
-        # Update result panel
-        self.content.results_card.update_results(result)
-
-        # Enable Detect button
         self.sidebar.detect_button.configure(
             state="normal"
         )
 
-        # Update status
         self.sidebar.status.configure(
-            text="🟢 Image Ready"
+            text="🟡 Image Loaded"
+        )
+        self.sidebar.upload_button.configure(
+            state="normal"
+        )
+        
+    def detect_damage(self):
+        self.sidebar.detect_button.configure(
+            state="disabled"
+        )
+
+        if self.image_path is None:
+            return
+
+        self.sidebar.status.configure(
+            text="🟡 Processing..."
+        )
+
+        self.update()
+
+        result = self.pipeline.process(self.image_path)
+
+        if result.cropped is not None:
+
+            crop = Image.fromarray(
+                cv2.cvtColor(result.cropped, cv2.COLOR_BGR2RGB)
+            )
+
+            self.content.crop_card.set_image(crop)
+
+        if result.preprocessed is not None:
+
+            processed = Image.fromarray(
+                cv2.cvtColor(result.preprocessed, cv2.COLOR_BGR2RGB)
+            )
+
+            self.content.processed_card.set_image(processed)
+
+        if result.segmented is not None:
+
+            segmented = Image.fromarray(
+                cv2.cvtColor(result.segmented, cv2.COLOR_BGR2RGB)
+            )
+
+            self.content.segmented_card.set_image(segmented)
+
+        self.content.results_card.update_results(result)
+
+        self.sidebar.status.configure(
+            text="🟢 Pipeline Completed"
+        )
+        self.sidebar.detect_button.configure(
+            state="normal"
+        )
+        
+    def clear_all(self):
+
+        self.image_path = None
+
+        # Reset image cards
+        cards = [
+            self.content.original_card,
+            self.content.crop_card,
+            self.content.processed_card,
+            self.content.segmented_card
+        ]
+
+        for card in cards:
+            card.image_label.configure(
+                image=None,
+                text="No Image"
+            )
+            card.photo = None
+
+        # Reset detection summary
+        self.content.results_card.damage.configure(
+            text="Damage Type      : --"
+        )
+
+        self.content.results_card.confidence.configure(
+            text="Confidence       : --"
+        )
+
+        self.content.results_card.severity.configure(
+            text="Severity         : --"
+        )
+
+        self.content.results_card.time.configure(
+            text="Processing Time  : --"
+        )
+
+        self.content.results_card.status.configure(
+            text="Status           : Waiting",
+            text_color="white"
+        )
+
+        # Reset sidebar
+        self.sidebar.detect_button.configure(
+            state="disabled"
+        )
+
+        self.sidebar.status.configure(
+            text="⚪ Ready"
         )
