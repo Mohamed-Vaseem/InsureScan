@@ -1,24 +1,55 @@
 class ProcessingResult:
     """
-    Stores everything produced during the AI pipeline.
+    Stores everything produced by the
+    complete InsureScan pipeline.
     """
 
     def __init__(self):
 
-        # Images
+        # -------------------------
+        # Input Stage
+        # -------------------------
+
+        self.input = None
+
+        # -------------------------
+        # Detection Stage
+        # -------------------------
+
+        self.damage = None
+
+        # -------------------------
+        # Output Images
+        # -------------------------
+
         self.original = None
+
+        self.cropped = None
+
         self.preprocessed = None
+
         self.detected = None
 
-        # Detection Information
+        # -------------------------
+        # AI Results
+        # -------------------------
+
         self.damage_type = None
+
         self.confidence = None
+
         self.severity = None
 
+        # -------------------------
         # Performance
-        self.processing_time = None
+        # -------------------------
 
+        self.processing_time = 0.0
+
+        # -------------------------
         # Status
+        # -------------------------
+
         self.success = False
+
         self.message = ""
-        self.preprocessing = None

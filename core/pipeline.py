@@ -1,60 +1,96 @@
 import time
 
-from preprocessing.preprocess import Preprocessor
-
 from core.image_manager import ImageManager
-from core.detector import DamageDetector
+from core.input_manager import InputManager
+
+from detection.damage_detector import DamageDetector
+
 from core.result import ProcessingResult
 
 
 class ProcessingPipeline:
 
+    """
+    Main InsureScan AI Pipeline.
+    """
+
     def __init__(self):
 
         self.images = ImageManager()
 
-        self.detector = DamageDetector()
+        self.input = InputManager()
 
-        self.preprocessor = Preprocessor()
+        self.detector = DamageDetector()
 
     def process(self, path):
 
-        result = ProcessingResult()
-
         start = time.time()
 
-        # Load image
-        original = self.images.load(path)
+        result = ProcessingResult()
 
-        result.original = original
+        # -------------------------
+        # Load Image
+        # -------------------------
 
-        # Preprocessing
-        pre = self.preprocessor.process(
-            original.copy()
+        image = self.images.load(path)
+
+        # -------------------------
+        # Input Stage
+        # -------------------------
+
+        input_result = self.input.prepare(image)
+
+        result.input = input_result
+
+        result.original = input_result.original
+
+        if input_result.cropped is not None:
+
+            result.cropped = input_result.cropped
+
+        if input_result.processed is not None:
+
+            result.preprocessed = input_result.processed
+
+        if not input_result.success:
+
+            result.message = input_result.message
+
+            return result
+
+        # -------------------------
+        # Damage Detection
+        # -------------------------
+
+        damage = self.detector.detect(
+            input_result.processed
         )
 
-        result.preprocessed = pre.processed
+        result.damage = damage
 
-        # (Store preprocessing report for future UI)
-        result.preprocessing = pre
+        result.detected = damage
 
-        # Detection (placeholder)
-        result.detected = self.detector.detect(
-            result.preprocessed.copy()
-        )
+        # -------------------------
+        # Placeholder
+        # -------------------------
 
-        # Processing time
+        result.damage_type = "Pending YOLO11-Seg"
+
+        result.confidence = "--"
+
+        result.severity = "--"
+
+        # -------------------------
+        # Finish
+        # -------------------------
+
         result.processing_time = round(
             time.time() - start,
             3
         )
 
-        # Placeholder values
-        result.damage_type = "Pending YOLO"
-        result.confidence = "0%"
-        result.severity = "Unknown"
-
         result.success = True
-        result.message = "Processing Complete"
+
+        result.message = "Pipeline completed."
 
         return result

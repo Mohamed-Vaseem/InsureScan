@@ -1,15 +1,7 @@
 import cv2
 import numpy as np
 
-from preprocessing.config import (
-    BLUR_MEDIUM,
-    BRIGHTNESS_LOW,
-    BRIGHTNESS_HIGH,
-    CONTRAST_THRESHOLD,
-    NOISE_THRESHOLD
-)
-
-from preprocessing.exposure import exposure_score
+from preprocessing.analysis_result import AnalysisResult
 
 
 class ImageAnalyzer:
@@ -39,8 +31,8 @@ class ImageAnalyzer:
 
         return float(
             np.std(
-                gray.astype(np.float32)
-                - smooth.astype(np.float32)
+                gray.astype(np.float32) -
+                smooth.astype(np.float32)
             )
         )
 
@@ -73,25 +65,22 @@ class ImageAnalyzer:
             cv2.COLOR_BGR2GRAY
         )
 
-        height, width = gray.shape
+        result = AnalysisResult()
 
-        report = {}
+        result.blur = self.blur(gray)
+        result.brightness = self.brightness(gray)
+        result.contrast = self.contrast(gray)
+        result.noise = self.noise(gray)
+        result.sharpness = self.sharpness(gray)
 
-        report["blur"] = self.blur(gray)
-        report["brightness"] = self.brightness(gray)
-        report["contrast"] = self.contrast(gray)
-        report["noise"] = self.noise(gray)
-        report["sharpness"] = self.sharpness(gray)
+        if result.brightness < 80:
+            result.recommendations.append(
+                "Increase Brightness"
+            )
 
-        report["width"] = width
-        report["height"] = height
+        if result.contrast < 40:
+            result.recommendations.append(
+                "Improve Contrast"
+            )
 
-        report["overexposure"] = exposure_score(gray)
-
-        report["is_blurry"] = report["blur"] < BLUR_MEDIUM
-        report["is_dark"] = report["brightness"] < BRIGHTNESS_LOW
-        report["is_bright"] = report["brightness"] > BRIGHTNESS_HIGH
-        report["low_contrast"] = report["contrast"] < CONTRAST_THRESHOLD
-        report["is_noisy"] = report["noise"] > NOISE_THRESHOLD
-
-        return report
+        return result
