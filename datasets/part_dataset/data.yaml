@@ -1,12 +1,30 @@
 path: datasets/part_dataset
 
 train: train/images
-val: val/images
+val: valid/images
 test: test/images
 
+nc: 21
+
 names:
-  0: headlamp
-  1: rear_bumper
-  2: door
-  3: hood
-  4: front_bumper
+  0: Back-bumper
+  1: Back-door
+  2: Back-wheel
+  3: Back-window
+  4: Back-windshield
+  5: Fender
+  6: Front-bumper
+  7: Front-door
+  8: Front-wheel
+  9: Front-window
+  10: Grille
+  11: Headlight
+  12: Hood
+  13: License-plate
+  14: Mirror
+  15: Quarter-panel
+  16: Rocker-panel
+  17: Roof
+  18: Tail-light
+  19: Trunk
+  20: Windshield

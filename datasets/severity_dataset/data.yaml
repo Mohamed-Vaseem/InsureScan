@@ -1,0 +1,17 @@
+path: datasets/severity_dataset
+
+train: train/images
+val: valid/images
+test: test/images
+
+nc: 8
+
+names:
+  - minor-dent
+  - minor-scratch
+  - moderate-broken
+  - moderate-dent
+  - moderate-scratch
+  - severe-broken
+  - severe-dent
+  - severe-scratch

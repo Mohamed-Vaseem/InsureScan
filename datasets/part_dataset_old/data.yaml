@@ -1,0 +1,12 @@
+path: datasets/part_dataset
+
+train: train/images
+val: val/images
+test: test/images
+
+names:
+  0: headlamp
+  1: rear_bumper
+  2: door
+  3: hood
+  4: front_bumper
