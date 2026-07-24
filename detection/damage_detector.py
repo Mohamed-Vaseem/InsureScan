@@ -1,66 +1,84 @@
 import cv2
+import numpy as np
+from ultralytics import YOLO
 
+from config.settings import Settings
 from detection.damage_result import DamageResult
 from detection.damage_detection import DamageDetection
 
 
 class DamageDetector:
     """
-    Temporary mock detector.
-
-    This class simulates YOLO11-Seg output so the
-    UI can be developed before model training.
+    YOLO11-Seg damage detector.
     """
 
     def __init__(self):
-        pass
+
+        self.model = YOLO(Settings.DAMAGE_MODEL)
 
     def predict(self, image):
 
         result = DamageResult()
 
-        annotated = image.copy()
-
-        height, width = image.shape[:2]
-
-        # Fake bounding box
-        x1 = int(width * 0.30)
-        y1 = int(height * 0.35)
-
-        x2 = int(width * 0.65)
-        y2 = int(height * 0.60)
-
-        detection = DamageDetection()
-
-        detection.class_id = 0
-        detection.class_name = "Scratch"
-        detection.confidence = 0.95
-        detection.bounding_box = (x1, y1, x2, y2)
-        detection.area = (x2 - x1) * (y2 - y1)
-
-        # Draw fake detection
-        cv2.rectangle(
-            annotated,
-            (x1, y1),
-            (x2, y2),
-            (0, 0, 255),
-            2
+        # Run inference
+        predictions = self.model.predict(
+            source=image,
+            conf=0.35,
+            verbose=False
         )
 
-        cv2.putText(
-            annotated,
-            f"{detection.class_name} ({detection.confidence:.2f})",
-            (x1, y1 - 10),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.7,
-            (0, 0, 255),
-            2
-        )
+        prediction = predictions[0]
+
+        # Draw segmentation masks and labels
+        annotated = prediction.plot()
+
+        boxes = prediction.boxes
+        masks = prediction.masks
+
+        if boxes is None or len(boxes) == 0:
+
+            result.success = True
+            result.message = "No damage detected."
+            result.annotated_image = annotated
+
+            return result
+
+        for i in range(len(boxes)):
+
+            detection = DamageDetection()
+
+            box = boxes[i]
+
+            detection.class_id = int(box.cls.item())
+            detection.class_name = self.model.names[detection.class_id]
+            detection.confidence = float(box.conf.item())
+
+            x1, y1, x2, y2 = box.xyxy[0].cpu().numpy()
+
+            detection.bounding_box = (
+                int(x1),
+                int(y1),
+                int(x2),
+                int(y2)
+            )
+
+            # Segmentation mask
+            if masks is not None:
+
+                mask = masks.data[i].cpu().numpy()
+
+                detection.mask = mask
+
+                polygon = masks.xy[i]
+
+                detection.polygon = polygon
+
+                detection.area = int(np.count_nonzero(mask))
+
+            result.detections.append(detection)
 
         result.annotated_image = annotated
-        result.detections.append(detection)
-
         result.success = True
-        result.message = "Mock detection completed."
+        result.message = f"{result.count} damage(s) detected."
 
         return result

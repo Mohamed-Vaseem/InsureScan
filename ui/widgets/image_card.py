@@ -9,27 +9,25 @@ DISPLAY_SIZE = (500, 280)
 class ImageCard(ctk.CTkFrame):
 
     def __init__(self, master, title):
+        super().__init__(master, corner_radius=12)
 
-        super().__init__(
-            master,
-            corner_radius=12
-        )
-
+        self.title = title
         self.photo = None
 
-        self.build(title)
+        self.build()
 
-    def build(self, title):
+    def build(self):
 
-        title_label = ctk.CTkLabel(
+        self.title_label = ctk.CTkLabel(
             self,
-            text=title,
+            text=self.title,
             font=HEADER_FONT
         )
+        self.title_label.pack(pady=(15, 10))
 
-        title_label.pack(
-            pady=(15, 10)
-        )
+        self.create_image_label()
+
+    def create_image_label(self):
 
         self.image_label = ctk.CTkLabel(
             self,
@@ -57,10 +55,18 @@ class ImageCard(ctk.CTkFrame):
         self.photo = ctk.CTkImage(
             light_image=image,
             dark_image=image,
-            size=image.size
+            size=DISPLAY_SIZE
         )
 
         self.image_label.configure(
             image=self.photo,
             text=""
         )
+
+    def clear(self):
+
+        self.photo = None
+
+        self.image_label.destroy()
+
+        self.create_image_label()

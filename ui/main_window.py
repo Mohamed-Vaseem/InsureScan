@@ -104,9 +104,10 @@ class MainWindow(ctk.CTk):
         )
 
         if not path:
+            self.sidebar.upload_button.configure(state="normal")
             return
 
-        self.image_path = path
+        self.image_path = path  
 
         image = self.pipeline.image_manager.load(path)
 
@@ -189,11 +190,7 @@ class MainWindow(ctk.CTk):
         ]
 
         for card in cards:
-            card.image_label.configure(
-                image=None,
-                text="No Image"
-            )
-            card.photo = None
+            card.clear()
 
         # Reset detection summary
         self.content.results_card.damage.configure(
