@@ -46,6 +46,15 @@ class Settings:
 
     DAMAGE_CONFIDENCE = 0.25
     DAMAGE_IOU = 0.45
+    
+    # ==========================================
+    # Part Detection
+    # ==========================================
+
+    PART_MODEL = "models/parts/best.pt"
+
+    PART_CONFIDENCE = 0.35
+    PART_IOU = 0.45
 
     # ==========================================
     # Image Processing

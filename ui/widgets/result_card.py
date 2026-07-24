@@ -30,6 +30,14 @@ class ResultCard(ctk.CTkFrame):
             anchor="w"
         )
         self.damage.pack(fill="x", padx=30, pady=6)
+        
+        self.part = ctk.CTkLabel(
+            self,
+            text="Part             : --",
+            font=("Segoe UI", 15),
+            anchor="w"
+        )
+        self.part.pack(fill="x", padx=30, pady=6)
 
         self.confidence = ctk.CTkLabel(
             self,
@@ -82,10 +90,6 @@ class ResultCard(ctk.CTkFrame):
                 text=f"Confidence : {detection.confidence:.2%}"
             )
 
-            self.severity.configure(
-                text="Severity : --"
-            )
-
         else:
 
             self.damage.configure(
@@ -96,24 +100,42 @@ class ResultCard(ctk.CTkFrame):
                 text="Confidence : --"
             )
 
-            self.severity.configure(
-                text="Severity : --"
+        if (
+            result.part is not None and
+            result.part.success and
+            result.part.count > 0
+        ):
+
+            part = result.part.detections[0]
+
+            self.part.configure(
+                text=f"Part : {part.class_name}"
             )
+
+        else:
+
+            self.part.configure(
+                text="Part : None"
+            )
+
+        self.severity.configure(
+            text="Severity : --"
+        )
 
         self.time.configure(
             text=f"Processing Time : {result.processing_time:.3f} sec"
         )
 
-        self.status.configure(
-            text=f"Status : {result.message}"
-        )
         if result.success:
+
             self.status.configure(
-                text="Status           : ✔ Pipeline Completed",
+                text="Status : ✔ Pipeline Completed",
                 text_color="#4CAF50"
             )
+
         else:
+
             self.status.configure(
-                text=f"Status           : ✖ {result.message}",
+                text=f"Status : ✖ {result.message}",
                 text_color="#F44336"
             )

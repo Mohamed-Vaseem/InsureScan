@@ -5,6 +5,7 @@ from core.input_manager import InputManager
 from core.processing_result import ProcessingResult
 
 from detection.damage_detector import DamageDetector
+from detection.part_detector import PartDetector
 
 
 class ProcessingPipeline:
@@ -19,6 +20,8 @@ class ProcessingPipeline:
         self.input_manager = InputManager()
 
         self.damage_detector = DamageDetector()
+
+        self.part_detector = PartDetector()
 
     def process(self, image_path):
 
@@ -58,12 +61,29 @@ class ProcessingPipeline:
             # Damage Detection
             # -----------------------
 
-            damage = self.damage_detector.predict(input_result.processed)
+            damage = self.damage_detector.predict(
+                input_result.processed
+            )
 
             result.damage = damage
 
             if damage.success:
                 result.segmented = damage.annotated_image
+
+            # -----------------------
+            # Part Detection
+            # -----------------------
+
+            part = self.part_detector.predict(
+                input_result.processed
+            )
+
+            result.part = part
+
+            if part.success:
+                result.part_segmented = part.annotated_image
+
+            # -----------------------
 
             result.processing_time = round(
                 time.time() - start,

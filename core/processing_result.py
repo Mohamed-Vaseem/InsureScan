@@ -15,7 +15,11 @@ class ProcessingResult:
 
         self.preprocessed = None
 
+        # Damage segmentation image
         self.segmented = None
+
+        # Part segmentation image
+        self.part_segmented = None
 
         # =============================
         # Pipeline Results
@@ -24,6 +28,8 @@ class ProcessingResult:
         self.input = None
 
         self.damage = None
+
+        self.part = None
 
         # =============================
         # Metadata
